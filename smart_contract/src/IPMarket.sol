@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.27;
+pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
 contract IPRegistrationNFT is 
     Initializable, 
@@ -19,10 +18,7 @@ contract IPRegistrationNFT is
     ReentrancyGuardUpgradeable,
     PausableUpgradeable
 {
-    using CountersUpgradeable for CountersUpgradeable.Counter;
-
-    CountersUpgradeable.Counter private _tokenIds;
-
+    uint256 private _nextTokenId;
     struct IPMetadata {
         string title;
         string description;
@@ -43,9 +39,10 @@ contract IPRegistrationNFT is
         __ERC721_init("TokenIP", "TIP");
         __ERC721URIStorage_init();
         __ERC721Enumerable_init();
-        __Ownable_init();
+        __Ownable_init_unchained();
         __ReentrancyGuard_init();
         __Pausable_init();
+        _nextTokenId = 1;
     }
 
     function registerIP(
@@ -56,8 +53,9 @@ contract IPRegistrationNFT is
         require(bytes(title).length > 0, "Title cannot be empty");
         require(bytes(ipfsHash).length > 0, "IPFS hash cannot be empty");
 
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
+        
+        uint256 newTokenId = _nextTokenId;
+        _nextTokenId++;
 
         _safeMint(msg.sender, newTokenId);
         _setTokenURI(newTokenId, ipfsHash);
@@ -85,7 +83,8 @@ contract IPRegistrationNFT is
         string memory newDescription,
         string memory newIpfsHash
     ) public whenNotPaused {
-        require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner nor approved");
+        require(_exists(tokenId), "Token does not exist");
+        require(ownerOf(tokenId) == _msgSender() || isApprovedForAll(ownerOf(tokenId), _msgSender()), "Caller is not owner nor approved");
         require(bytes(newTitle).length > 0, "New title cannot be empty");
         require(bytes(newIpfsHash).length > 0, "New IPFS hash cannot be empty");
 
@@ -106,12 +105,14 @@ contract IPRegistrationNFT is
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
         internal
-        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, ERC721URIStorageUpgradeable)
     {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
+        ERC721EnumerableUpgradeable._beforeTokenTransfer(from, to, tokenId, batchSize);
+        ERC721URIStorageUpgradeable._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
-    function _burn(uint256 tokenId)
+        override(ERC721Upgradeable, ERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable)
         internal
         override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
     {
@@ -135,4 +136,10 @@ contract IPRegistrationNFT is
     {
         return super.supportsInterface(interfaceId);
     }
+
+    function _exists(uint256 tokenId) internal view returns (bool) {
+    return _ownerOf(tokenId) != address(0);
+    }
+
+    
 }

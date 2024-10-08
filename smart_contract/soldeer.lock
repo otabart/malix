@@ -4,3 +4,17 @@ version = "5.0.2"
 source = "https://soldeer-revisions.s3.amazonaws.com/@openzeppelin-contracts/5_0_2_14-03-2024_06:11:59_contracts.zip"
 checksum = "8bc4f0acc7c187771b878d46f7de4bfad1acad2eb5d096d9d05d34035853f5c3"
 integrity = "55881f6114aa36158566ef52b486d9d96b217c3e47d0e24bbd4994a8cfb5ee7c"
+
+[[dependencies]]
+name = "@openzeppelin-contracts"
+version = "5.1.0-rc.0"
+source = "https://soldeer-revisions.s3.amazonaws.com/@openzeppelin-contracts/5_1_0-rc_0_04-10-2024_19:20:01_contracts.zip"
+checksum = "642a59e89329abd51254468f4607a0e3b3b99d0981cf5c6caf34d8f1dd9cb4b6"
+integrity = "4f363171ffce91dfeec58d04ffc2fa96c527a547f324e71065256a58b3fe1578"
+
+[[dependencies]]
+name = "@openzeppelin-contracts-upgradeable"
+version = "5.1.0-rc.0"
+source = "https://soldeer-revisions.s3.amazonaws.com/@openzeppelin-contracts-upgradeable/5_1_0-rc_0_04-10-2024_19:20:11_contracts-upgradeable.zip"
+checksum = "bfaaf1917891eca05bbcd781d229da283e6351539228eed224da45a5f8bac690"
+integrity = "6ce26b750663566b59a093c0a7239f4b7b9fda370159b9a01d718a977fefeda6"

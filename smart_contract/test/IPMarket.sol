@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "../src/IPRegistrationNFT.sol";
+import "../src/IPMarket.sol";
 
 contract IPRegistrationNFTTest is Test {
     IPRegistrationNFT public nft;
@@ -38,6 +38,20 @@ contract IPRegistrationNFTTest is Test {
         assertEq(metadata.title, "Test IP");
         assertEq(metadata.description, "This is a test IP");
         assertEq(metadata.ipfsHash, "QmTest");
+        
+        vm.stopPrank();
+    }
+
+    function testSequentialTokenIds() public {
+        vm.startPrank(user1);
+        
+        uint256 tokenId1 = nft.registerIP("Test IP 1", "This is test IP 1", "QmTest1");
+        uint256 tokenId2 = nft.registerIP("Test IP 2", "This is test IP 2", "QmTest2");
+        uint256 tokenId3 = nft.registerIP("Test IP 3", "This is test IP 3", "QmTest3");
+        
+        assertEq(tokenId1, 1);
+        assertEq(tokenId2, 2);
+        assertEq(tokenId3, 3);
         
         vm.stopPrank();
     }
@@ -128,6 +142,21 @@ contract IPRegistrationNFTTest is Test {
         uint256 tokenId = nft.registerIP("Test IP", "This is a test IP", "QmTest");
         
         assertEq(nft.tokenURI(tokenId), "QmTest");
+    }
+
+    function testTokenIdStartsAtOne() public {
+        vm.prank(user1);
+        uint256 firstTokenId = nft.registerIP("First IP", "This is the first IP", "QmFirst");
+        assertEq(firstTokenId, 1);
+    }
+
+    function testTokenIdIncrementAfterBurn() public {
+        vm.startPrank(user1);
+        uint256 tokenId1 = nft.registerIP("IP 1", "This is IP 1", "QmIP1");
+        nft.burn(tokenId1);
+        uint256 tokenId2 = nft.registerIP("IP 2", "This is IP 2", "QmIP2");
+        assertEq(tokenId2, 2);
+        vm.stopPrank();
     }
 
     receive() external payable {}
