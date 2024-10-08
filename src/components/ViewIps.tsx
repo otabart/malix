@@ -1,4 +1,4 @@
-import random from '../assets/random.png'
+import random from '../assets/images/random.png'
 
 export default function ViewIps(){
     return (
