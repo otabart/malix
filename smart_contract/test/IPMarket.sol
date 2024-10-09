@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
 import "../src/IPMarket.sol";
@@ -17,13 +17,13 @@ contract IPRegistrationNFTTest is Test {
 
         // Deploy the contract
         nft = new IPRegistrationNFT();
-        nft.initialize();
+        nft.initialize("TokenIP", "TIP", 0, address(this));
     }
 
     function testInitialization() public {
         assertEq(nft.name(), "TokenIP");
         assertEq(nft.symbol(), "TIP");
-        assertEq(nft.owner(), owner);
+        assertTrue(nft.hasRole(nft.DEFAULT_ADMIN_ROLE(), address(this)));
     }
 
     function testRegisterIP() public {
@@ -57,21 +57,19 @@ contract IPRegistrationNFTTest is Test {
     }
 
     function testCannotRegisterEmptyTitle() public {
-        vm.startPrank(user1);
+        vm.prank(user1);
         
         vm.expectRevert("Title cannot be empty");
         nft.registerIP("", "This is a test IP", "QmTest");
         
-        vm.stopPrank();
     }
 
     function testCannotRegisterEmptyIPFSHash() public {
-        vm.startPrank(user1);
+        vm.prank(user1);
         
         vm.expectRevert("IPFS hash cannot be empty");
         nft.registerIP("Test IP", "This is a test IP", "");
         
-        vm.stopPrank();
     }
 
     function testUpdateIPMetadata() public {
@@ -114,13 +112,13 @@ contract IPRegistrationNFTTest is Test {
         assertEq(tokenId, 1);
     }
 
-    function testOnlyOwnerCanPauseAndUnpause() public {
+    function testOnlyAdminCanPauseAndUnpause() public {
         vm.prank(user1);
-        vm.expectRevert("Ownable: caller is not the owner");
+        vm.expectRevert("AccessControl: account 0x0000000000000000000000000000000000000001 is missing role 0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775");
         nft.pause();
         
         vm.prank(user1);
-        vm.expectRevert("Ownable: caller is not the owner");
+        vm.expectRevert("AccessControl: account 0x0000000000000000000000000000000000000001 is missing role 0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775");
         nft.unpause();
     }
 
@@ -150,14 +148,23 @@ contract IPRegistrationNFTTest is Test {
         assertEq(firstTokenId, 1);
     }
 
-    function testTokenIdIncrementAfterBurn() public {
-        vm.startPrank(user1);
-        uint256 tokenId1 = nft.registerIP("IP 1", "This is IP 1", "QmIP1");
-        nft.burn(tokenId1);
-        uint256 tokenId2 = nft.registerIP("IP 2", "This is IP 2", "QmIP2");
-        assertEq(tokenId2, 2);
-        vm.stopPrank();
-    }
+   function testRegistrationFee() public {
+    uint256 fee = 0.1 ether;
+    nft.setRegistrationFee(fee);
+
+    vm.deal(user1, 1 ether);
+    vm.prank(user1);
+    uint256 tokenId = nft.registerIP{value: fee}("Test IP", "This is a test IP", "QmTest");
+
+    assertEq(tokenId, 1);
+    assertEq(address(nft.feeRecipient()).balance, fee);
+   }
+
+   function testSetFeeRecipient() public {
+    address newRecipient = address(0x123);
+    nft.setFeeRecipient(newRecipient);
+    assertEq(nft.feeRecipient(), newRecipient);
+   }
 
     receive() external payable {}
 }
