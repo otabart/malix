@@ -3,8 +3,6 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -15,21 +13,14 @@ contract IPRegistrationNFT is
     ERC721Upgradeable,
     ERC721URIStorageUpgradeable,
     ERC721EnumerableUpgradeable,
-    AccessControlUpgradeable,
-    PausableUpgradeable,
     ReentrancyGuardUpgradeable,
     UUPSUpgradeable
 {
-
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-
     struct IPMetadata {
         string title;
         string description;
         uint256 creationDate;
         string ipfsHash;
-        bool isVerified;
     }
 
     uint256 private _nextTokenId;
@@ -41,11 +32,8 @@ contract IPRegistrationNFT is
 
     event IPRegistered(uint256 indexed tokenId, address indexed owner, string title, uint256 creationDate);
     event IPMetadataUpdated(uint256 indexed tokenId, string title, string description, string ipfsHash);
-    event IPVerificationStatusChanged(uint256 indexed tokenId, bool isVerified);
-    event RegistrationFeeUpdated(uint256 newFee);
-    event FeeRecipientUpdated(address newRecipient);
 
-   /// @custom:oz-upgrades-unsafe-allow constructor
+    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
@@ -59,14 +47,8 @@ contract IPRegistrationNFT is
         __ERC721_init(name, symbol);
         __ERC721URIStorage_init();
         __ERC721Enumerable_init();
-        __AccessControl_init();
-        __Pausable_init();
         __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
-
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(ADMIN_ROLE, msg.sender);
-        _grantRole(UPGRADER_ROLE, msg.sender);
 
         registrationFee = initialFee;
         feeRecipient = initialFeeRecipient;
@@ -80,7 +62,6 @@ contract IPRegistrationNFT is
     ) 
         public
         payable
-        whenNotPaused
         nonReentrant
         returns (uint256)
     {
@@ -99,8 +80,7 @@ contract IPRegistrationNFT is
             title: title,
             description: description,
             creationDate: block.timestamp,
-            ipfsHash: ipfsHash,
-            isVerified: false
+            ipfsHash: ipfsHash
         });
 
         _usedIPFSHashes[ipfsHash] = true;
@@ -126,7 +106,6 @@ contract IPRegistrationNFT is
         string memory ipfsHash
     ) 
         public
-        whenNotPaused
     {
         require(ownerOf(tokenId) == msg.sender, "Only the owner can update metadata");
         require(!_usedIPFSHashes[ipfsHash] || keccak256(bytes(_ipMetadata[tokenId].ipfsHash)) == keccak256(bytes(ipfsHash)), "IPFS hash already used");
@@ -145,32 +124,7 @@ contract IPRegistrationNFT is
         emit IPMetadataUpdated(tokenId, title, description, ipfsHash);
     }
 
-    function verifyIP(uint256 tokenId, bool verificationStatus) public onlyRole(ADMIN_ROLE) {
-        require(_ownerOf(tokenId) != address(0), "Token does not exist");
-        _ipMetadata[tokenId].isVerified = verificationStatus;
-        emit IPVerificationStatusChanged(tokenId, verificationStatus);
-    }
-
-    function setRegistrationFee(uint256 newFee) public onlyRole(ADMIN_ROLE) {
-        registrationFee = newFee;
-        emit RegistrationFeeUpdated(newFee);
-    }
-
-    function setFeeRecipient(address newRecipient) public onlyRole(ADMIN_ROLE) {
-        require(newRecipient != address(0), "Invalid fee recipient");
-        feeRecipient = newRecipient;
-        emit FeeRecipientUpdated(newRecipient);
-    }
-
-    function pause() public onlyRole(ADMIN_ROLE) {
-        _pause();
-    }
-
-    function unpause() public onlyRole(ADMIN_ROLE) {
-        _unpause();
-    }
-
-    function _authorizeUpgrade(address newImplementation) internal override onlyRole(UPGRADER_ROLE) {}
+    function _authorizeUpgrade(address newImplementation) internal override {}
 
     function _update(
         address to, 
@@ -182,7 +136,7 @@ contract IPRegistrationNFT is
     {
         address from = _ownerOf(tokenId);
         address result = super._update(to, tokenId, auth);
-        if (from != to && !paused()) {
+        if (from != to) {
             // Implement any additional logic you need here
         }
         return result;
@@ -207,7 +161,7 @@ contract IPRegistrationNFT is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, ERC721URIStorageUpgradeable, AccessControlUpgradeable)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, ERC721URIStorageUpgradeable)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
