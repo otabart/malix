@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Wallet, ShoppingCart, LogOut, Coins } from 'lucide-react'
+import Link from 'next/link';
+
 
 // Mock data for marketplace items
 const marketplaceItems = [
@@ -16,28 +18,20 @@ const marketplaceItems = [
 ]
 
 export default function HomePage() {
-  const [address, setAddress] = useState("0x1234...5678")
-
+  // const [address, setAddress] = useState("0x1234...5678")
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-      {/* Navbar */}
-      <nav className="flex justify-between items-center p-4 bg-gray-800 bg-opacity-50 backdrop-blur-md">
-        <div className="text-2xl font-bold">MaliX</div>
-        <div className="flex space-x-2">
-          <Button variant="outline"><Coins className="mr-2 h-4 w-4" /> Tokenize</Button>
-          <Button variant="outline">{address}</Button>
-          <Button variant="outline"><ShoppingCart className="mr-2 h-4 w-4" /> Buy</Button>
-          <Button variant="outline"><LogOut className="mr-2 h-4 w-4" /> Disconnect</Button>
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <section className="text-center py-20">
         <h1 className="text-6xl font-bold mb-4 animate-fade-in-down"></h1>
         <p className="text-xl mb-8 animate-fade-in-up">Empowering creators and innovators in the decentralized world</p>
         <div className="flex justify-center space-x-4">
-          <Button size="lg" className="animate-pulse">Tokenize IP</Button>
-          <Button size="lg" variant="outline">Marketplace</Button>
+          <Link href="/upload">
+            <Button size="lg" className="animate-pulse">Tokenize IP</Button>
+          </Link>
+          <Link href="/token_gallery">
+            <Button size="lg" variant="outline" className='bg-gradient-to-b from-gray-900 to-gray-800 text-white'>Marketplace</Button>
+          </Link>
         </div>
       </section>
 

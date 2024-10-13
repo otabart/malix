@@ -37,17 +37,6 @@ export default function TokenizePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-      {/* Navbar */}
-      <nav className="flex justify-between items-center p-4 bg-gray-800 bg-opacity-50 backdrop-blur-md">
-        <div className="text-2xl font-bold">MaliX Project</div>
-        <div className="flex space-x-2">
-          <Button variant="outline"><Coins className="mr-2 h-4 w-4" /> Tokenize</Button>
-          <Button variant="outline">{address}</Button>
-          <Button variant="outline"><ShoppingCart className="mr-2 h-4 w-4" /> Buy</Button>
-          <Button variant="outline"><LogOut className="mr-2 h-4 w-4" /> Disconnect</Button>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">Tokenize Your Asset</h1>

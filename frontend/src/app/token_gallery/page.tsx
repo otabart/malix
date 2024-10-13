@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Wallet, ShoppingCart, LogOut, Coins, Search, Filter, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
+import Link from 'next/link'
 import { i } from 'framer-motion/client'
 
 // Mock data for tokens
@@ -37,18 +38,7 @@ export default function TokenGallery() {
   }, [searchTerm, selectedCategory])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-      {/* Navbar */}
-      <nav className="flex justify-between items-center p-4 bg-gray-800 bg-opacity-50 backdrop-blur-md">
-        <div className="text-2xl font-bold">MaliX Project</div>
-        <div className="flex space-x-2">
-          <Button variant="outline"><Coins className="mr-2 h-4 w-4" /> Tokenize</Button>
-          <Button variant="outline">{address}</Button>
-          <Button variant="outline"><ShoppingCart className="mr-2 h-4 w-4" /> Buy</Button>
-          <Button variant="outline"><LogOut className="mr-2 h-4 w-4" /> Disconnect</Button>
-        </div>
-      </nav>
-
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray">
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">Token Gallery</h1>
@@ -103,7 +93,9 @@ export default function TokenGallery() {
                         animate={{ opacity: 1 }}
                         className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"
                       >
-                        <Button className="bg-white text-black hover:bg-gray-200">View Details</Button>
+                        <Link href="/feature_item">
+                          <Button className="bg-white text-black hover:bg-gray-200">View Details</Button>
+                        </Link>
                       </motion.div>
                     )}
                   </CardContent>
