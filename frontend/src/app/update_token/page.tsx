@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Wallet, ShoppingCart, LogOut, Coins, RefreshCw, Check } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
+import Link from 'next/link'
 
 // Mock data for a token
 const mockToken = {
@@ -52,17 +53,6 @@ export default function UpdateTokenPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-      {/* Navbar */}
-      <nav className="flex justify-between items-center p-4 bg-gray-800 bg-opacity-50 backdrop-blur-md">
-        <div className="text-2xl font-bold">MaliX Project</div>
-        <div className="flex space-x-2">
-          <Button variant="outline"><Coins className="mr-2 h-4 w-4" /> Tokenize</Button>
-          <Button variant="outline">{address}</Button>
-          <Button variant="outline"><ShoppingCart className="mr-2 h-4 w-4" /> Buy</Button>
-          <Button variant="outline"><LogOut className="mr-2 h-4 w-4" /> Disconnect</Button>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">Update Token</h1>
@@ -131,6 +121,9 @@ export default function UpdateTokenPage() {
                   </Select>
                 </div>
                 <CardFooter className="flex justify-end p-0">
+                  <Link href="/" className='mr-2'>
+                    <Button>Home</Button>
+                  </Link>
                   <Button type="submit" disabled={isUpdating} className="relative">
                     {isUpdating ? (
                       <motion.div
