@@ -24,7 +24,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="text-center py-20">
         <h1 className="text-6xl font-bold mb-4 animate-fade-in-down"></h1>
-        <p className="text-xl mb-8 animate-fade-in-up">Empowering creators and innovators in the decentralized world</p>
+        <p className="text-xl mb-8 animate-fade-in-up">Tokenizing Ideas, Empowering Creators</p>
         <div className="flex justify-center space-x-4">
           <Link href="/upload">
             <Button size="lg" className="animate-pulse">Tokenize IP</Button>
@@ -62,7 +62,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">MaliX Project</h3>
-            <p className="text-sm">Empowering innovation through decentralized technology.</p>
+            <p className="text-sm">Tokenizing Ideas, Empowering Creators</p>
           </div>
           <div>
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>

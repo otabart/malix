@@ -50,9 +50,9 @@ const Navbar = () => {
 
     return (
       <nav className="flex justify-between items-center p-4 bg-gradient-to-b from-gray-900 to-gray-800 text-gray bg-opacity-50 backdrop-blur-md">
-        <div className="text-2xl font-bold">MaliX
+        <div className="text-2xl font-bold">
             <Link href="/" className='p-5 bg-0'>
-                Home
+                MaliX
             </Link>
         </div>
         <div className="flex space-x-2">
