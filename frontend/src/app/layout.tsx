@@ -5,7 +5,7 @@ import "./globals.css";
 // import Navbar from "@/components/navbar";
 import "@coinbase/onchainkit/styles.css";
 import { cookieToInitialState } from "wagmi";
-import { Providers } from "../context/providers";
+// import { Providers } from "../context/providers";
 import { headers } from "next/headers";
 // import { getConfig } from "../config/wagmi";
 import '@rainbow-me/rainbowkit/styles.css';
