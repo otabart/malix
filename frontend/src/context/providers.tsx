@@ -6,6 +6,9 @@ import { base } from "wagmi/chains";
 import { type ReactNode, useState } from "react";
 import { type State, WagmiProvider } from "wagmi";
 import { getConfig } from "@/config/wagmi";
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import Navbar from "@/components/navbar";
+import { Rainbow } from "lucide-react";
 
 export function Providers(props: {
   children: ReactNode;
@@ -17,11 +20,11 @@ export function Providers(props: {
   return (
     <WagmiProvider config={config} initialState={props.initialState}>
       <QueryClientProvider client={queryClient}>
-        <OnchainKitProvider
-          apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
-          chain={base}
-        >
-          {props.children}
+        <OnchainKitProvider apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY} chain={base}>
+          <RainbowKitProvider modalSize="compact">
+            {/* <Navbar /> */}
+            {props.children}
+          </RainbowKitProvider>
         </OnchainKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

@@ -6,6 +6,7 @@ import { Wallet, ShoppingCart, LogOut, Coins, Search, Filter, Sparkles } from 'l
 import { motion, AnimatePresence } from "framer-motion"
 import Link from 'next/link'
 import { i } from 'framer-motion/client'
+import Navbar from '@/components/navbar'
 
 // Mock data for tokens
 const mockTokens = [
@@ -37,8 +38,19 @@ export default function TokenGallery() {
     setTokens(filtered)
   }, [searchTerm, selectedCategory])
 
+  const [domLoaded, setDomLoaded] = useState(false);
+
+  useEffect(() => {
+    setDomLoaded(true);
+  }, []);
+
+  if (!domLoaded) {
+    return null // or a loading spinner
+  }
   return (
+
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray">
+      <Navbar />
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">Token Gallery</h1>
