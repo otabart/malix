@@ -1,22 +1,20 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-'use client'
-import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import Image from 'next/image'
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Wallet, ShoppingCart, LogOut, Coins, Search, Filter, Sparkles } from 'lucide-react'
-import { motion, AnimatePresence } from "framer-motion"
-import Link from 'next/link'
-import Navbar from '@/components/navbar'
-import { useAccount, useReadContract } from 'wagmi'
-import { parseEther, formatEther } from 'viem'
+"use client";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { ShoppingCart, Search, Filter, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import Navbar from "@/components/navbar";
+import { useAccount, useReadContract } from "wagmi";
+// import { parseEther, formatEther } from "viem";
 
 // Import the ABI
-import { ABI } from "@/contracts/IPRegistrationNFT"
+import { ABI } from "@/contracts/IPRegistrationNFT";
 
 // Replace with your contract address
-const CONTRACT_ADDRESS = "0xc00d46Ef2581717EA065A1290201106B85Ce20Ca"
+const CONTRACT_ADDRESS = "0xc00d46Ef2581717EA065A1290201106B85Ce20Ca";
 
 interface IPMetadata {
   title: string;
@@ -37,56 +35,54 @@ interface TokenData {
 }
 
 export default function TokenGallery() {
-  const { address } = useAccount()
-  const [tokens, setTokens] = useState<TokenData[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [hoveredToken, setHoveredToken] = useState<number|null>(null)
+  const { address } = useAccount();
+  const [tokens, setTokens] = useState<TokenData[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [hoveredToken, setHoveredToken] = useState<number | null>(null);
 
-  const categories = ["All", "Art", "Tech", "Knowledge"]
+  const categories = ["All", "Art", "Tech", "Knowledge"];
 
   // Fetch total supply of tokens
   const { data: totalSupply } = useReadContract({
     abi: ABI,
     address: CONTRACT_ADDRESS as `0x${string}`,
-    functionName: 'totalSupply',
-  })
+    functionName: "totalSupply",
+  });
 
-  useEffect(() => {
-    if (totalSupply) {
-      const fetchTokenDetails = async () => {
-  // Fetch token details
-  const {data: tokenDetails } = useReadContract({
+  // Fetch the latest token details
+  const { data: latestTokenDetails } = useReadContract({
     abi: ABI,
     address: CONTRACT_ADDRESS as `0x${string}`,
-    functionName: 'getIPMetadata',
-    args: [BigInt(totalSupply.toString()) - BigInt(1)],
-  })
+    functionName: "getIPMetadata",
+    args: totalSupply
+      ? [BigInt(totalSupply.toString()) - BigInt(1)]
+      : undefined,
+    enabled: !!totalSupply,
+  });
 
- 
-    if (tokenDetails) {
-      const typedTokenDetails = tokenDetails as IPMetadata;
+  useEffect(() => {
+    if (latestTokenDetails && totalSupply) {
+      const typedTokenDetails = latestTokenDetails as IPMetadata;
       const newToken: TokenData = {
         id: Number(totalSupply.toString()) - 1,
         name: typedTokenDetails.title,
         description: typedTokenDetails.description,
-        creator: address || 'Unknown',
-        price: '0.01 ETH', // You might want to fetch the actual price if available
+        creator: address || "Unknown",
+        price: "0.01 ETH", // You might want to fetch the actual price if available
         image: `https://ipfs.io/ipfs/${typedTokenDetails.ipfsHash}`,
-        category: 'Art', // You might want to add category to your smart contract
+        category: "Art", // You might want to add category to your smart contract
         creationDate: Number(typedTokenDetails.creationDate),
       };
-      setTokens(prevTokens => [...prevTokens, newToken])
+      setTokens((prevTokens) => [...prevTokens, newToken]);
     }
-  };
-  fetchTokenDetails();
-}
-  }, [totalSupply, address]);
+  }, [latestTokenDetails, totalSupply, address]);
 
-  const filteredTokens = tokens.filter(token => 
-    token.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (selectedCategory === "All" || token.category === selectedCategory)
-  )
+  const filteredTokens = tokens.filter(
+    (token) =>
+      token.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (selectedCategory === "All" || token.category === selectedCategory)
+  );
 
   const [domLoaded, setDomLoaded] = useState(false);
 
@@ -95,7 +91,7 @@ export default function TokenGallery() {
   }, []);
 
   if (!domLoaded) {
-    return null // or a loading spinner
+    return null; // or a loading spinner
   }
 
   return (
@@ -104,7 +100,7 @@ export default function TokenGallery() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">Token Gallery</h1>
-        
+
         {/* Search and Filter */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div className="relative w-full md:w-1/3 mb-4 md:mb-0">
@@ -119,7 +115,7 @@ export default function TokenGallery() {
           </div>
           <div className="flex items-center space-x-2">
             <Filter className="h-5 w-5 text-gray-400" />
-            {categories.map(category => (
+            {categories.map((category) => (
               <Button
                 key={category}
                 variant={selectedCategory === category ? "default" : "outline"}
@@ -148,7 +144,14 @@ export default function TokenGallery() {
               >
                 <Card className="bg-gray-800 border-gray-700 overflow-hidden relative">
                   <CardContent className="p-0">
-                    <Image src={token.image} alt={token.name} className="w-full h-64 object-cover" />
+                    <Image
+                      src={token.image}
+                      alt={token.name}
+                      width={300}
+                      height={300}
+                      layout="responsive"
+                      objectFit="cover"
+                    />
                     {hoveredToken === token.id && (
                       <motion.div
                         initial={{ opacity: 0 }}
@@ -156,18 +159,30 @@ export default function TokenGallery() {
                         className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"
                       >
                         <Link href={`/token/${token.id}`}>
-                          <Button className="bg-white text-black hover:bg-gray-200">View Details</Button>
+                          <Button className="bg-white text-black hover:bg-gray-200">
+                            View Details
+                          </Button>
                         </Link>
                       </motion.div>
                     )}
                   </CardContent>
                   <CardFooter className="flex flex-col items-start p-4">
                     <h3 className="text-xl font-semibold mb-1">{token.name}</h3>
-                    <p className="text-sm text-gray-400 mb-2">by {token.creator}</p>
-                    <p className="text-xs text-gray-500 mb-2">Created: {new Date(token.creationDate * 1000).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-400 mb-2">
+                      by {token.creator}
+                    </p>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Created:{" "}
+                      {new Date(token.creationDate * 1000).toLocaleDateString()}
+                    </p>
                     <div className="flex justify-between items-center w-full">
-                      <span className="text-green-400 font-bold">{token.price}</span>
-                      <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
+                      <span className="text-green-400 font-bold">
+                        {token.price}
+                      </span>
+                      <Button
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-600"
+                      >
                         <ShoppingCart className="mr-2 h-4 w-4" /> Buy Now
                       </Button>
                     </div>
@@ -189,11 +204,12 @@ export default function TokenGallery() {
           >
             <Sparkles className="h-16 w-16 text-gray-500 mx-auto mb-4" />
             <h2 className="text-2xl font-semibold mb-2">No tokens found</h2>
-            <p className="text-gray-400">Try adjusting your search or filter to find more tokens.</p>
+            <p className="text-gray-400">
+              Try adjusting your search or filter to find more tokens.
+            </p>
           </motion.div>
         )}
       </main>
-
 
       {/* Dynamic Background */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
