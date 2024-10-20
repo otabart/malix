@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import Image from 'next/image'
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Wallet, ShoppingCart, LogOut, Coins, RefreshCw, Check } from 'lucide-react'
+import { RefreshCw, Check } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import Link from 'next/link'
 import Navbar from '@/components/navbar'
@@ -78,7 +80,7 @@ export default function UpdateTokenPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="flex items-center space-x-4">
                   <div className="w-1/3">
-                    <img src={token.image} alt={token.name} className="w-full h-auto rounded-lg" />
+                    <Image src={token.image} alt={token.name} className="w-full h-auto rounded-lg" />
                   </div>
                   <div className="w-2/3 space-y-4">
                     <div>

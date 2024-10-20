@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Wallet, ShoppingCart, LogOut, Coins } from 'lucide-react'
 import Link from 'next/link';
+// import Image from 'next/image'
 import Navbar from '@/components/navbar'
 
 

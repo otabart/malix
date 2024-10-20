@@ -1,8 +1,6 @@
 'use client'
 
 import React, { useEffect, useState } from 'react';
-import { Button } from './ui/button';
-import { Coins, ShoppingCart, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import LoginButton from './LoginButton';
 import SignupButton from './SignupButton';

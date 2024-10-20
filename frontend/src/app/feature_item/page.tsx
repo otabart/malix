@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { useState } from 'react'
@@ -38,7 +39,7 @@ export default function ItemDetailView() {
         <CardContent>
           <div className="flex flex-col md:flex-row gap-8">
             <div className="md:w-1/2">
-              <img
+              <Image
                 src={item.image}
                 alt={item.title}
                 width={400}

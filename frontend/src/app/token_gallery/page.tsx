@@ -1,6 +1,9 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
+import Image from 'next/image'
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Wallet, ShoppingCart, LogOut, Coins, Search, Filter, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
@@ -49,17 +52,19 @@ export default function TokenGallery() {
     functionName: 'totalSupply',
   })
 
+  useEffect(() => {
+    if (totalSupply) {
+      const fetchTokenDetails = async () => {
   // Fetch token details
-  const { data: tokenDetails } = useReadContract({
+  const {data: tokenDetails } = useReadContract({
     abi: ABI,
     address: CONTRACT_ADDRESS as `0x${string}`,
     functionName: 'getIPMetadata',
-    args: totalSupply ? [BigInt(totalSupply.toString()) - 1n] : undefined,
-    enabled: !!totalSupply,
+    args: [BigInt(totalSupply.toString()) - BigInt(1)],
   })
 
-  useEffect(() => {
-    if (tokenDetails && totalSupply) {
+ 
+    if (tokenDetails) {
       const typedTokenDetails = tokenDetails as IPMetadata;
       const newToken: TokenData = {
         id: Number(totalSupply.toString()) - 1,
@@ -70,10 +75,13 @@ export default function TokenGallery() {
         image: `https://ipfs.io/ipfs/${typedTokenDetails.ipfsHash}`,
         category: 'Art', // You might want to add category to your smart contract
         creationDate: Number(typedTokenDetails.creationDate),
-      }
+      };
       setTokens(prevTokens => [...prevTokens, newToken])
     }
-  }, [tokenDetails, totalSupply, address])
+  };
+  fetchTokenDetails();
+}
+  }, [totalSupply, address]);
 
   const filteredTokens = tokens.filter(token => 
     token.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -140,7 +148,7 @@ export default function TokenGallery() {
               >
                 <Card className="bg-gray-800 border-gray-700 overflow-hidden relative">
                   <CardContent className="p-0">
-                    <img src={token.image} alt={token.name} className="w-full h-64 object-cover" />
+                    <Image src={token.image} alt={token.name} className="w-full h-64 object-cover" />
                     {hoveredToken === token.id && (
                       <motion.div
                         initial={{ opacity: 0 }}

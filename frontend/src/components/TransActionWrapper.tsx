@@ -18,7 +18,7 @@ import { ABI } from '@/contracts/IPRegistrationNFT';
 //   mintContractAddress,
 // } from '../constants';
 
-export default function TransactionWrapper({ address, function_name }: { address: Address, function_name: String }) {
+export default function TransactionWrapper({ address, function_name }: { address: Address, function_name: string }) {
   const contracts = [
     {
       address: process.env.CONTRACT_ADDRESS,
