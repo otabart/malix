@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Wallet, ShoppingCart, LogOut, Coins, RefreshCw, Check } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import Link from 'next/link'
+import Navbar from '@/components/navbar'
 
 // Mock data for a token
 const mockToken = {
@@ -50,9 +51,19 @@ export default function UpdateTokenPage() {
     setUpdateSuccess(true)
     setTimeout(() => setUpdateSuccess(false), 3000)
   }
+  const [domLoaded, setDomLoaded] = useState(false);
+
+  useEffect(() => {
+    setDomLoaded(true);
+  }, []);
+
+  if (!domLoaded) {
+    return null // or a loading spinner
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+      <Navbar />
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">Update Token</h1>

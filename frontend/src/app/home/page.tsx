@@ -1,10 +1,12 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Wallet, ShoppingCart, LogOut, Coins } from 'lucide-react'
 import Link from 'next/link';
+import Navbar from '@/components/navbar'
+
 
 
 // Mock data for marketplace items
@@ -18,9 +20,20 @@ const marketplaceItems = [
 ]
 
 export default function HomePage() {
+  const [domLoaded, setDomLoaded] = useState(false);
+
+  useEffect(() => {
+    setDomLoaded(true);
+  }, []);
+
+  if (!domLoaded) {
+    return null // or a loading spinner
+  }
+
   // const [address, setAddress] = useState("0x1234...5678")
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+      <Navbar />
       {/* Hero Section */}
       <section className="text-center py-20">
         <h1 className="text-6xl font-bold mb-4 animate-fade-in-down"></h1>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { FileCheck, Upload } from 'lucide-react'
 import { motion } from "framer-motion"
 import { pinata } from "@/utils/config"
+import Navbar from '@/components/navbar'
 
 export default function TokenizePage() {
   const [address, setAddress] = useState("0x1234...5678")
@@ -70,8 +71,19 @@ export default function TokenizePage() {
     setFile(undefined)
   }
 
+  const [domLoaded, setDomLoaded] = useState(false);
+
+  useEffect(() => {
+    setDomLoaded(true);
+  }, []);
+
+  if (!domLoaded) {
+    return null // or a loading spinner
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+      <Navbar />
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">Tokenize Your Asset</h1>
         
