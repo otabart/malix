@@ -5,38 +5,80 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Wallet, ShoppingCart, LogOut, Coins, Search, Filter, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import Link from 'next/link'
-import { i } from 'framer-motion/client'
 import Navbar from '@/components/navbar'
+import { useAccount, useReadContract } from 'wagmi'
+import { parseEther, formatEther } from 'viem'
 
-// Mock data for tokens
-const mockTokens = [
-  { id: 1, name: "Cosmic Harmony", creator: "Stella Nova", price: "1.5 ETH", image: "https://picsum.photos/seed/1/300/300", category: "Art" },
-  { id: 2, name: "Quantum Algorithm", creator: "Dr. Qubit", price: "2.0 ETH", image: "https://picsum.photos/seed/2/300/300", category: "Tech" },
-  { id: 3, name: "Ancient Wisdom Scroll", creator: "Sage Elder", price: "0.8 ETH", image: "https://picsum.photos/seed/3/300/300", category: "Knowledge" },
-  { id: 4, name: "Nanobot Swarm", creator: "MicroMind", price: "3.2 ETH", image: "https://picsum.photos/seed/4/300/300", category: "Tech" },
-  { id: 5, name: "Ethereal Dreamscape", creator: "Luna Whisper", price: "1.7 ETH", image: "https://picsum.photos/seed/5/300/300", category: "Art" },
-  { id: 6, name: "Blockchain Codex", creator: "Crypto Sage", price: "2.5 ETH", image: "https://picsum.photos/seed/6/300/300", category: "Knowledge" },
-  { id: 7, name: "Galactic Oasis", creator: "Cosmo Gardner", price: "1.9 ETH", image: "https://picsum.photos/seed/7/300/300", category: "Art" },
-  { id: 8, name: "Neural Network Nexus", creator: "AI Architect", price: "2.8 ETH", image: "https://picsum.photos/seed/8/300/300", category: "Tech" },
-  { id: 9, name: "Ancestral Memories", creator: "Heritage Keeper", price: "1.2 ETH", image: "https://picsum.photos/seed/9/300/300", category: "Knowledge" },
-]
+// Import the ABI
+import { ABI } from "@/contracts/IPRegistrationNFT"
+
+// Replace with your contract address
+const CONTRACT_ADDRESS = "0xc00d46Ef2581717EA065A1290201106B85Ce20Ca"
+
+interface IPMetadata {
+  title: string;
+  description: string;
+  creationDate: bigint;
+  ipfsHash: string;
+}
+
+interface TokenData {
+  id: number;
+  name: string;
+  description: string;
+  creator: string;
+  price: string;
+  image: string;
+  category: string;
+  creationDate: number;
+}
 
 export default function TokenGallery() {
-  const [address, setAddress] = useState("0x1234...5678")
-  const [tokens, setTokens] = useState(mockTokens)
+  const { address } = useAccount()
+  const [tokens, setTokens] = useState<TokenData[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [hoveredToken, setHoveredToken] = useState<number|null>(null)
 
   const categories = ["All", "Art", "Tech", "Knowledge"]
 
+  // Fetch total supply of tokens
+  const { data: totalSupply } = useReadContract({
+    abi: ABI,
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    functionName: 'totalSupply',
+  })
+
+  // Fetch token details
+  const { data: tokenDetails } = useReadContract({
+    abi: ABI,
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    functionName: 'getIPMetadata',
+    args: totalSupply ? [BigInt(totalSupply.toString()) - 1n] : undefined,
+    enabled: !!totalSupply,
+  })
+
   useEffect(() => {
-    const filtered = mockTokens.filter(token => 
-      token.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (selectedCategory === "All" || token.category === selectedCategory)
-    )
-    setTokens(filtered)
-  }, [searchTerm, selectedCategory])
+    if (tokenDetails && totalSupply) {
+      const typedTokenDetails = tokenDetails as IPMetadata;
+      const newToken: TokenData = {
+        id: Number(totalSupply.toString()) - 1,
+        name: typedTokenDetails.title,
+        description: typedTokenDetails.description,
+        creator: address || 'Unknown',
+        price: '0.01 ETH', // You might want to fetch the actual price if available
+        image: `https://ipfs.io/ipfs/${typedTokenDetails.ipfsHash}`,
+        category: 'Art', // You might want to add category to your smart contract
+        creationDate: Number(typedTokenDetails.creationDate),
+      }
+      setTokens(prevTokens => [...prevTokens, newToken])
+    }
+  }, [tokenDetails, totalSupply, address])
+
+  const filteredTokens = tokens.filter(token => 
+    token.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (selectedCategory === "All" || token.category === selectedCategory)
+  )
 
   const [domLoaded, setDomLoaded] = useState(false);
 
@@ -47,8 +89,8 @@ export default function TokenGallery() {
   if (!domLoaded) {
     return null // or a loading spinner
   }
-  return (
 
+  return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray">
       <Navbar />
       {/* Main Content */}
@@ -85,7 +127,7 @@ export default function TokenGallery() {
         {/* Token Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <AnimatePresence>
-            {tokens.map((token) => (
+            {filteredTokens.map((token) => (
               <motion.div
                 key={token.id}
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -105,7 +147,7 @@ export default function TokenGallery() {
                         animate={{ opacity: 1 }}
                         className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"
                       >
-                        <Link href="/feature_item">
+                        <Link href={`/token/${token.id}`}>
                           <Button className="bg-white text-black hover:bg-gray-200">View Details</Button>
                         </Link>
                       </motion.div>
@@ -114,6 +156,7 @@ export default function TokenGallery() {
                   <CardFooter className="flex flex-col items-start p-4">
                     <h3 className="text-xl font-semibold mb-1">{token.name}</h3>
                     <p className="text-sm text-gray-400 mb-2">by {token.creator}</p>
+                    <p className="text-xs text-gray-500 mb-2">Created: {new Date(token.creationDate * 1000).toLocaleDateString()}</p>
                     <div className="flex justify-between items-center w-full">
                       <span className="text-green-400 font-bold">{token.price}</span>
                       <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
@@ -130,7 +173,7 @@ export default function TokenGallery() {
           </AnimatePresence>
         </div>
 
-        {tokens.length === 0 && (
+        {filteredTokens.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -142,6 +185,7 @@ export default function TokenGallery() {
           </motion.div>
         )}
       </main>
+
 
       {/* Dynamic Background */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
@@ -169,5 +213,5 @@ export default function TokenGallery() {
         ))}
       </div>
     </div>
-  )
+  );
 }

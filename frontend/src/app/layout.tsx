@@ -22,7 +22,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'MaliX Template',
+  title: 'MaliX',
   description: 'Built with OnchainKit',
   openGraph: {
     title: 'Onchain App Template',

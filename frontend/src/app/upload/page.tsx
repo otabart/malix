@@ -1,75 +1,117 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
-import { FileCheck, Upload } from 'lucide-react'
-import { motion } from "framer-motion"
-import { pinata } from "@/utils/config"
-import Navbar from '@/components/navbar'
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { FileCheck, Upload } from "lucide-react";
+import { motion } from "framer-motion";
+import { pinata } from "@/utils/config";
+import Navbar from "@/components/navbar";
+import { useAccount, useWriteContract } from "wagmi";
+import { parseEther } from "viem";
+
+// Import the ABI
+import { ABI } from "@/contracts/IPRegistrationNFT";
+
+// Replace with your contract address
+const CONTRACT_ADDRESS = "0xc00d46Ef2581717EA065A1290201106B85Ce20Ca";
 
 export default function TokenizePage() {
-  const [address, setAddress] = useState("0x1234...5678")
+  const { address } = useAccount();
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    ipfsHash: ""
-  })
-  const [file, setFile] = useState<File>()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+    ipfsHash: "",
+  });
+  const [file, setFile] = useState<File>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prevData => ({
+  const { writeContract, status, reset } = useWriteContract();
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: value
-    }))
-  }
+      [name]: value,
+    }));
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFile(e.target?.files?.[0])
-  }
+    setFile(e.target?.files?.[0]);
+  };
 
   const uploadFile = async () => {
     if (!file) {
-      alert("No file selected")
-      return
+      alert("No file selected");
+      return;
     }
     try {
-      setIsSubmitting(true)
-      const keyRequest = await fetch("/api/key")
-      const keyData = await keyRequest.json()
-      const upload = await pinata.upload.file(file).key(keyData.JWT)
-      console.log(upload)
-      setFormData(prevData => ({
+      setIsSubmitting(true);
+      const keyRequest = await fetch("/api/key");
+      const keyData = await keyRequest.json();
+      const upload = await pinata.upload.file(file).key(keyData.JWT);
+      console.log(upload);
+      setFormData((prevData) => ({
         ...prevData,
-        ipfsHash: upload.IpfsHash
-      }))
-      setIsSubmitting(false)
+        ipfsHash: upload.IpfsHash,
+      }));
+      setIsSubmitting(false);
     } catch (e) {
-      console.error(e)
-      setIsSubmitting(false)
-      alert("Trouble uploading file")
+      console.error(e);
+      setIsSubmitting(false);
+      alert("Trouble uploading file");
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!formData.ipfsHash) {
-      alert("Please upload a file first")
-      return
+      alert("Please upload a file first");
+      return;
     }
-    setIsSubmitting(true)
-    // Simulate API call for tokenization
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    console.log("Asset tokenized:", formData)
-    setIsSubmitting(false)
-    // Reset form after submission
-    setFormData({ name: "", description: "", ipfsHash: "" })
-    setFile(undefined)
-  }
+    setIsPending(true);
+    try {
+      writeContract({
+        abi: ABI,
+        address: CONTRACT_ADDRESS as `0x${string}`,
+        functionName: "registerIP",
+        args: [formData.name, formData.description, formData.ipfsHash],
+        value: parseEther("0.01"), // Adjust this value based on your contract's registration fee
+      });
+    } catch (error) {
+      console.error("Error submitting transaction:", error);
+      alert("Error submitting transaction. Please try again.");
+      setIsPending(false);
+    }
+  };
+
+  useEffect(() => {
+    if (status === "success") {
+      alert("Asset successfully tokenized!");
+      setFormData({ name: "", description: "", ipfsHash: "" });
+      setFile(undefined);
+      setIsPending(false);
+      reset();
+    } else if (status === "error") {
+      console.error("Transaction error");
+      alert("Error tokenizing asset. Please try again.");
+      setIsPending(false);
+      reset();
+    }
+  }, [status, reset]);
 
   const [domLoaded, setDomLoaded] = useState(false);
 
@@ -78,25 +120,38 @@ export default function TokenizePage() {
   }, []);
 
   if (!domLoaded) {
-    return null // or a loading spinner
+    return null; // or a loading spinner
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-8">Tokenize Your Asset</h1>
-        
+        <h1 className="text-4xl font-bold text-center mb-8">
+          Tokenize Your Asset
+        </h1>
+
+        {address && (
+          <p className="text-center mb-4">Connected Address: {address}</p>
+        )}
+
         <Card className="max-w-md mx-auto bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle>Asset Details</CardTitle>
-            <CardDescription>Enter the details of the asset you want to tokenize</CardDescription>
+            <CardDescription>
+              Enter the details of the asset you want to tokenize
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Name
+                  </label>
                   <Input
                     id="name"
                     name="name"
@@ -107,7 +162,12 @@ export default function TokenizePage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Description
+                  </label>
                   <Textarea
                     id="description"
                     name="description"
@@ -118,7 +178,12 @@ export default function TokenizePage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="file" className="block text-sm font-medium mb-1">File</label>
+                  <label
+                    htmlFor="file"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    File
+                  </label>
                   <Input
                     id="file"
                     type="file"
@@ -126,7 +191,11 @@ export default function TokenizePage() {
                     className="bg-gray-700 border-gray-600"
                   />
                 </div>
-                <Button type="button" onClick={uploadFile} disabled={!file || isSubmitting}>
+                <Button
+                  type="button"
+                  onClick={uploadFile}
+                  disabled={!file || isSubmitting}
+                >
                   {isSubmitting ? (
                     <motion.div
                       className="flex items-center"
@@ -143,7 +212,9 @@ export default function TokenizePage() {
                 </Button>
                 {formData.ipfsHash && (
                   <div>
-                    <label className="block text-sm font-medium mb-1">IPFS Hash</label>
+                    <label className="block text-sm font-medium mb-1">
+                      IPFS Hash
+                    </label>
                     <Input
                       value={formData.ipfsHash}
                       readOnly
@@ -153,8 +224,11 @@ export default function TokenizePage() {
                 )}
               </div>
               <CardFooter className="flex justify-end mt-4 p-0">
-                <Button type="submit" disabled={isSubmitting || !formData.ipfsHash}>
-                  {isSubmitting ? (
+                <Button
+                  type="submit"
+                  disabled={isPending || !formData.ipfsHash}
+                >
+                  {isPending ? (
                     <motion.div
                       className="flex items-center"
                       initial={{ opacity: 0 }}
@@ -211,5 +285,5 @@ export default function TokenizePage() {
         ))}
       </div>
     </div>
-  )
+  );
 }
