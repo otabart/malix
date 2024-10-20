@@ -1,11 +1,13 @@
 'use client'
+
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
-import { Wallet, ShoppingCart, LogOut, Coins, FileCheck } from 'lucide-react'
+import { FileCheck, Upload } from 'lucide-react'
 import { motion } from "framer-motion"
+import { pinata } from "@/utils/config"
 
 export default function TokenizePage() {
   const [address, setAddress] = useState("0x1234...5678")
@@ -14,6 +16,7 @@ export default function TokenizePage() {
     description: "",
     ipfsHash: ""
   })
+  const [file, setFile] = useState<File>()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -24,20 +27,51 @@ export default function TokenizePage() {
     }))
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFile(e.target?.files?.[0])
+  }
+
+  const uploadFile = async () => {
+    if (!file) {
+      alert("No file selected")
+      return
+    }
+    try {
+      setIsSubmitting(true)
+      const keyRequest = await fetch("/api/key")
+      const keyData = await keyRequest.json()
+      const upload = await pinata.upload.file(file).key(keyData.JWT)
+      console.log(upload)
+      setFormData(prevData => ({
+        ...prevData,
+        ipfsHash: upload.IpfsHash
+      }))
+      setIsSubmitting(false)
+    } catch (e) {
+      console.error(e)
+      setIsSubmitting(false)
+      alert("Trouble uploading file")
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!formData.ipfsHash) {
+      alert("Please upload a file first")
+      return
+    }
     setIsSubmitting(true)
-    // Simulate API call
+    // Simulate API call for tokenization
     await new Promise(resolve => setTimeout(resolve, 2000))
-    console.log("Form submitted:", formData)
+    console.log("Asset tokenized:", formData)
     setIsSubmitting(false)
     // Reset form after submission
     setFormData({ name: "", description: "", ipfsHash: "" })
+    setFile(undefined)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">Tokenize Your Asset</h1>
         
@@ -72,19 +106,42 @@ export default function TokenizePage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="ipfsHash" className="block text-sm font-medium mb-1">IPFS Hash</label>
+                  <label htmlFor="file" className="block text-sm font-medium mb-1">File</label>
                   <Input
-                    id="ipfsHash"
-                    name="ipfsHash"
-                    value={formData.ipfsHash}
-                    onChange={handleInputChange}
-                    required
+                    id="file"
+                    type="file"
+                    onChange={handleFileChange}
                     className="bg-gray-700 border-gray-600"
                   />
                 </div>
+                <Button type="button" onClick={uploadFile} disabled={!file || isSubmitting}>
+                  {isSubmitting ? (
+                    <motion.div
+                      className="flex items-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <Upload className="mr-2 h-4 w-4 animate-bounce" />
+                      Uploading...
+                    </motion.div>
+                  ) : (
+                    <>Upload to IPFS</>
+                  )}
+                </Button>
+                {formData.ipfsHash && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">IPFS Hash</label>
+                    <Input
+                      value={formData.ipfsHash}
+                      readOnly
+                      className="bg-gray-700 border-gray-600"
+                    />
+                  </div>
+                )}
               </div>
               <CardFooter className="flex justify-end mt-4 p-0">
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting || !formData.ipfsHash}>
                   {isSubmitting ? (
                     <motion.div
                       className="flex items-center"
