@@ -58,7 +58,6 @@ export default function TokenGallery() {
     args: totalSupply
       ? [BigInt(totalSupply.toString()) - BigInt(1)]
       : undefined,
-    enabled: !!totalSupply,
   });
 
   useEffect(() => {
